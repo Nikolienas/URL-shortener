@@ -1,0 +1,22 @@
+[
+  {
+    "model": "shortener.Link",
+    "id": 1,
+    "fields": {
+      "original_url": "https://bbs.archlinux.org/",
+      "short_code": "79X0hb",
+      "description": "Сайт, когда появились проблемы с арчем...опять",
+      "tags": "Арч, линукс, я нажал и все исчезло"
+    }
+  },
+  {
+    "model": "shortener.Link",
+    "id": 2,
+    "fields": {
+      "original_url": "http://www.gatchina.biz/generator",
+      "short_code": "6dOTR1",
+      "description": "Сайт, когда нужна по истени светская беседа",
+      "tags": "Одиночество, интеллектуальные беседы"
+    }
+  }
+]

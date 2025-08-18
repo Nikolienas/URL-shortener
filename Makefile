@@ -24,10 +24,10 @@ docker-build:
 # Джанго
 
 makemigrate:
-	docker exec django python manage.py makemigrations
+	docker exec django_url_shortener python manage.py makemigrations
 
 migrate:
-	docker exec django python manage.py migrate
+	docker exec django_url_shortener python manage.py migrate
 
 createsuperuser:
 	python $(PWD)/src/backend/manage.py createsuperuser

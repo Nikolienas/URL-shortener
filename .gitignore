@@ -4,11 +4,10 @@
 **/__pycache__
 **/migrations/*
 !**/migrations/__init__.py
+**/.pytest_cache
+**/media
+**/django_static
 venv/
 env/
 .venv
-.env
 src/backend/fixtures_loaded.flag
-src/backend/media/user_images
-src/backend/media/photo
-src/backend/media/*

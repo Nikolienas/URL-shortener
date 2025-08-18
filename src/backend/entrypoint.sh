@@ -28,7 +28,7 @@ if [ ! -f "$FLAG_FILE" ]; then
     python manage.py collectstatic --noinput
 
     # Загрузка фикстур
-    # ./manage.py loaddata fixtures/User_Custom_User.json --app User_Custom_User
+    ./manage.py loaddata fixtures/Link.json --app Link
 
     # Создание файл-флага, указывающий на то, что фикстуры были загружены
     touch $FLAG_FILE

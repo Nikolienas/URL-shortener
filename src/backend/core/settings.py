@@ -27,7 +27,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'drf_spectacular',
     'rest_framework',
+    'shortener',
 ]
 
 MIDDLEWARE = [
@@ -69,8 +71,11 @@ DATABASES = {
         'NAME': environ.get('POSTGRES_DB', 'url_shortener'),
         'USER': environ.get('POSTGRES_USER', 'postgres'),
         'PASSWORD': environ.get('POSTGRES_PASSWORD', 123),
-        'HOST': environ.get('POSTGRES_HOST', 'postgres'),
-        'PORT': environ.get('POSTGRES_PORT', '5432')
+        'HOST': environ.get('POSTGRES_HOST', 'postgres_url_shortener'),
+        'PORT': environ.get('POSTGRES_PORT', '5432'),
+        'TEST': {
+            'NAME': 'test_url_shortener',
+        },
     }
 }
 
@@ -115,3 +120,46 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'django_static')
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny'
+    ],
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer"
+    ]
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Django Swagger API URL-SHORTENER',
+    'DESCRIPTION': 'Django Swagger API for URL-SHORTENER',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True
+}
+
+# Файлы
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+
+# RabbitMQ
+RMQ_USER = environ.get('RMQ_USER')
+RMQ_PASS = environ.get('RMQ_PASS')
+
+
+# Celery
+CELERY_TIMEZONE = 'Europe/Moscow'
+CELERY_BROKER_URL = f'amqp://{RMQ_USER}:{RMQ_PASS}@rabbitmq:5672/'
+CELERY_RESULT_BACKEND = 'rpc://'
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_IGNORE_RESULT = False
+CELERY_RESULT_EXPIRES = 3600

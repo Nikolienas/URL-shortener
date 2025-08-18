@@ -1,13 +1,19 @@
 FROM python:3.12-alpine
 
-WORKDIR /app
-RUN mkdir -p $WORKDIR/static
-RUN mkdir -p $WORKDIR/media
+ENV WORKDIR=/app
+WORKDIR $WORKDIR
 
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+RUN adduser -D -s /bin/bash admin
 
-RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev
+RUN apk update && \
+    apk add --no-cache \
+    postgresql-dev \
+    gcc \
+    python3-dev \
+    musl-dev \
+    cairo \
+    cairo-dev \
+    pkgconfig
 
 RUN pip install --upgrade pip
 RUN pip install poetry
@@ -17,4 +23,10 @@ COPY pyproject.toml poetry.lock ./
 RUN poetry config virtualenvs.create false
 RUN poetry install --no-root
 
-COPY . .
+RUN mkdir -p $WORKDIR/static $WORKDIR/media && \
+    chown -R admin:admin $WORKDIR/static $WORKDIR/media
+
+USER admin
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
