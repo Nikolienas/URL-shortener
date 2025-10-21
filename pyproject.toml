@@ -23,10 +23,12 @@ dependencies = [
     "celery (>=5.5.3,<6.0.0)",
     "xlsxwriter (>=3.2.5,<4.0.0)",
     "amqp (>=5.3.1,<6.0.0)",
-    "pytest-django (>=4.11.1,<5.0.0)"
+    "pytest-django (>=4.11.1,<5.0.0)",
+    "aiogram (>=3.22.0,<4.0.0)"
 ]
 
 [tool.poetry]
+package-mode = false
 
 [tool.poetry.group.dev.dependencies]
 django = "^5.2.5"
