@@ -46,7 +46,7 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/shortener/', include("shortener.urls")),
-    path('<str:short_code>', RedirectView.as_view()),
+    path('<str:code>', RedirectView.as_view()),
     # Опциональные UI
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
