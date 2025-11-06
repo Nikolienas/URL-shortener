@@ -25,7 +25,7 @@ if [ ! -f "$FLAG_FILE" ]; then
     python manage.py migrate
 
     # Сбор статических файлов
-    python manage.py collectstatic --noinput
+    python manage.py collectstatic --noinput --clear
 
     # Загрузка фикстур
     ./manage.py loaddata fixtures/Link.json --app Link

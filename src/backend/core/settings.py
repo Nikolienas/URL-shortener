@@ -48,7 +48,9 @@ ROOT_URLCONF = 'core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates')
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -141,12 +143,11 @@ SPECTACULAR_SETTINGS = {
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-
 # Файлы
+STATIC_URL = '/static/'
+STATIC_ROOT = '/app/static'
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = '/app/media'
 
 
 
@@ -158,7 +159,7 @@ RMQ_PASS = environ.get('RMQ_PASS')
 # Celery
 CELERY_TIMEZONE = 'Europe/Moscow'
 CELERY_BROKER_URL = f'amqp://{RMQ_USER}:{RMQ_PASS}@rabbitmq:5672/'
-CELERY_RESULT_BACKEND = 'rpc://'
+CELERY_RESULT_BACKEND = f'rpc://{RMQ_USER}:{RMQ_PASS}@rabbitmq:5672/'
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'

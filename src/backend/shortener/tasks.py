@@ -144,7 +144,7 @@ def generate_export_file(self, base_url, generate_qr=True):
         
         # Сохранение файла на серваке
         filename = f"links_export_{self.request.id}.zip"
-        export_dir = os.path.join(settings.MEDIA_ROOT, 'backend', 'exports')
+        export_dir = os.path.join(settings.MEDIA_ROOT, 'exports')
         
         # Создание директории, в случае если она не существует
         os.makedirs(export_dir, exist_ok=True)
@@ -157,7 +157,7 @@ def generate_export_file(self, base_url, generate_qr=True):
         return {
             "file_path": filepath,
             "filename": filename,
-            "download_url": f"/media/backend/exports/{filename}",
+            "download_url": f"/media/exports/{filename}",
             "file_size": os.path.getsize(filepath)
         }
         

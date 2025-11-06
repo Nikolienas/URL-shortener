@@ -13,8 +13,8 @@ services:
     volumes:
       - ./docker/services/nginx/conf.d:/etc/nginx/conf.d
       - ./docker/shared/nginx/log:/var/log/nginx
-      - ./docker/shared/django/media:/app/backend/media
-      - ./docker/shared/django/django_static:/app/backend/django_static
+      - ./docker/shared/django/media:/app/media
+      - ./docker/shared/django/static:/app/static
     depends_on:
       - backend
 
@@ -28,7 +28,7 @@ services:
     volumes:
       - ./src/backend:/app/
       - ./docker/shared/django/media:/app/media
-      - ./docker/shared/django/django_static:/app/django_static
+      - ./docker/shared/django/static:/app/static
     expose:
       - 8000
     depends_on:
@@ -79,24 +79,25 @@ services:
     volumes:
       - ./src/backend:/app/
       - ./docker/shared/django/media:/app/media
-      - ./docker/shared/django/django_static:/app/django_static
+      - ./docker/shared/django/static:/app/static
     env_file:
       - ./.env
     depends_on:
       - rabbitmq
 
-  telegram_bot:
-    restart: unless-stopped
-    container_name: tgbot_url_shortener
-    build:
-      context: .
-      dockerfile: ./docker/services/bot/Dockerfile
-    volumes:
-      - ./src/backend:/app
-    env_file:
-      - ./.env
-    depends_on:
-      - backend
+  # telegram_bot:
+  #   restart: unless-stopped
+  #   container_name: tgbot_url_shortener
+  #   build:
+  #     context: .
+  #     dockerfile: ./docker/services/bot/Dockerfile
+  #   volumes:
+  #     - ./src/backend:/app
+  #   env_file:
+  #     - ./.env
+  #   depends_on:
+  #     - backend
 
 volumes:
   rabbitmq_data_volume:
+  postgres_data:

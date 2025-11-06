@@ -6,7 +6,7 @@
 !**/migrations/__init__.py
 **/.pytest_cache
 **/media
-**/django_static
+**/static
 venv/
 env/
 .venv
