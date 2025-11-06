@@ -3,8 +3,6 @@ FROM python:3.12-alpine
 ENV WORKDIR=/app
 WORKDIR $WORKDIR
 
-RUN adduser -D -s /bin/bash admin
-
 RUN apk update && \
     apk add --no-cache \
     postgresql-dev \
@@ -15,18 +13,15 @@ RUN apk update && \
     cairo-dev \
     pkgconfig
 
-RUN pip install --upgrade pip
-RUN pip install poetry
+RUN pip install --upgrade pip && \
+    pip install poetry
 
 COPY pyproject.toml poetry.lock ./
 
-RUN poetry config virtualenvs.create false
-RUN poetry install --no-root
+RUN poetry config virtualenvs.create false && \
+    poetry install --no-root
 
-RUN mkdir -p $WORKDIR/static $WORKDIR/media && \
-    chown -R admin:admin $WORKDIR/static $WORKDIR/media
+COPY . .
 
-USER admin
-
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
