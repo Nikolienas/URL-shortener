@@ -212,7 +212,7 @@ def bulk_create_links(self, file_content_base64, base_url):
                 continue
             
             # Создаем данные для ссылки
-            link_data = {"url": url}
+            link_data = {"url": url, "is_active": True}
             if description_col_index != -1:
                 description_cell = row[description_col_index]
                 link_data["description"] = description_cell.value or ''

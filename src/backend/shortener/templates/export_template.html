@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Export Links</title>
+    <style>
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        
+        .progress-container {
+            display: none;
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #4CAF50;
+            transition: width 0.3s ease;
+        }
+        
+        .status-message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-progress {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Export Links</h1>
+        
+        <div style="margin-bottom: 20px;">
+            <label>
+                <input type="checkbox" id="generateQr" checked>
+                Generate QR Codes
+            </label>
+        </div>
+        
+        <button id="exportBtn" onclick="startExport()">Start Export</button>
+        
+        <div id="progressContainer" class="progress-container">
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+            </div>
+            <div id="progressText">0%</div>
+            <div id="statusMessage" class="status-message"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentTaskId = null;
+        let pollInterval = null;
+
+        function startExport() {
+            const generateQr = document.getElementById('generateQr').checked;
+            const btn = document.getElementById('exportBtn');
+            
+            btn.disabled = true;
+            showProgress();
+            updateStatus('Starting export...', 'pending');
+
+            fetch(`/api/shortener/export/?generate_qr=${generateQr}`)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            throw new Error(`HTTP ${response.status}: ${text}`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.task_id) {
+                        currentTaskId = data.task_id;
+                        updateStatus('Task started. Waiting for execution...', 'pending');
+                        startPolling();
+                    } else {
+                        throw new Error(data.error || 'Failed to start export');
+                    }
+                })
+                .catch(error => {
+                    updateStatus(`Error: ${error.message}`, 'error');
+                    btn.disabled = false;
+                });
+        }
+
+        function startPolling() {
+            pollInterval = setInterval(checkStatus, 2000);
+            checkStatus();
+        }
+
+        function checkStatus() {
+            if (!currentTaskId) return;
+
+            fetch(`/api/shortener/export/status/${currentTaskId}`)
+                .then(response => {
+                    const contentType = response.headers.get('content-type');
+                    
+                    if (contentType && contentType.includes('application/zip')) {
+                        stopPolling();
+                        updateProgress(100, 'Export completed! Downloading file...');
+                        document.getElementById('exportBtn').disabled = false;
+                        
+                        return response.blob().then(blob => {
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.style.display = 'none';
+                            a.href = url;
+                            a.download = `links_export_${currentTaskId}.zip`;
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(a);
+                        });
+                    }
+                    
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            throw new Error(`HTTP ${response.status}: ${text}`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && typeof data === 'object') {
+                        handleStatusResponse(data);
+                    }
+                })
+                .catch(error => {
+                    const contentType = error.message && error.message.includes('JSON') ? 'json' : 'other';
+                    if (contentType === 'json') {
+                        updateStatus(`Request error: ${error.message}`, 'error');
+                        stopPolling();
+                    }
+                });
+        }
+
+        function handleStatusResponse(data) {
+            const btn = document.getElementById('exportBtn');
+
+            if (data.state === 'PENDING') {
+                updateStatus('Task is pending...', 'pending');
+            } 
+            else if (data.state === 'PROGRESS') {
+                const progress = Math.round((data.progress / data.total) * 100);
+                updateProgress(progress, data.status_message || 'Processing...');
+            } 
+            else if (data.state === 'SUCCESS') {
+                if (data.error) {
+                    updateStatus(`Error: ${data.error}`, 'error');
+                } else {
+                    updateProgress(100, 'Export completed!');
+                }
+                stopPolling();
+                btn.disabled = false;
+            } 
+            else if (data.state === 'FAILURE') {
+                updateStatus(`Execution error: ${data.error}`, 'error');
+                stopPolling();
+                btn.disabled = false;
+            }
+        }
+
+        function updateProgress(percent, message) {
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            progressFill.style.width = `${percent}%`;
+            progressText.textContent = `${percent}%`;
+            updateStatus(message, 'progress');
+        }
+
+        function updateStatus(message, type) {
+            const statusElement = document.getElementById('statusMessage');
+            statusElement.textContent = message;
+            statusElement.className = `status-message status-${type}`;
+        }
+
+        function showProgress() {
+            document.getElementById('progressContainer').style.display = 'block';
+        }
+
+        function stopPolling() {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
+            }
+        }
+
+        window.addEventListener('beforeunload', stopPolling);
+    </script>
+</body>
+</html>

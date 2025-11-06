@@ -10,6 +10,7 @@ from rest_framework import viewsets
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.views import View
+from django.views.generic import TemplateView
 from .models import Link
 from .serializers import LinkSerializer, BulkLinkSerializer, LinkGETSerializer
 from .tasks import generate_export_file, bulk_create_links
@@ -75,7 +76,7 @@ class BulkCreateLinksView(viewsets.ModelViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-class CreatingLinkStatusView(APIView):
+class BulkCreateLinkStatusView(APIView):
     def get(self, request, task_id):
         try:
             task = AsyncResult(task_id)
@@ -108,6 +109,7 @@ class CreatingLinkStatusView(APIView):
                 {"error": str(e)}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
+        
 class ExportLinksView(APIView):
     def get(self, request):
         """Запуск задачи экспорта ссылок"""
@@ -124,7 +126,7 @@ class ExportLinksView(APIView):
                 "task_id": task.id,
                 "status": "Задача запущена",
                 "message": "Подготовка файла началась",
-                "check_status_url": f"/api/export/status/{task.id}/"
+                "check_status_url": f"/api/shortener/export/status/{task.id}/"
             }, status=status.HTTP_202_ACCEPTED)
             
         except Exception as e:
@@ -216,3 +218,9 @@ class RedirectView(View):
     def get(self, request, code):
         link = get_object_or_404(Link, code=code)
         return HttpResponseRedirect(link.url)
+    
+class ExportTemplateView(TemplateView):
+    template_name = 'export_template.html'
+
+class BulkCreateTemplateView(TemplateView):
+    template_name = 'bulk_create_template.html'

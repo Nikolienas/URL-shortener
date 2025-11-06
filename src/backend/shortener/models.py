@@ -27,6 +27,7 @@ class Link(models.Model):
     url = models.URLField(max_length=2048)
     name = models.CharField("Название URl-а", null=True, blank=True)
     code = models.CharField(max_length=50, unique=True, default=generate_short_code)
+    is_active = models.BooleanField(default=False)
     description = models.TextField(blank=True, null=True)
     tags = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True)
@@ -39,3 +40,8 @@ class Link(models.Model):
     def get_encoded_url(self):
         """Функция для возврата правильно закодированных русских символов"""
         return quote(self.url, safe=':/?&=')
+    
+    def is_taken(self):
+        if self.url is None:
+            return False
+        return True
